@@ -241,6 +241,31 @@ jupyter notebook notebooks/experiments.ipynb
 
 Yogeshvar Reddy Kallam and Ajay Krishna Devulapally contributed equally — problem formulation, data pipeline, all RL agent implementations (MC/Q-Learning/SARSA/DQN/DQN+ICM), state representation design, hyperparameter tuning, experiments, and report writing.
 
+
+---
+
+## Knowledge Graph Module
+
+This repository includes a **KG-based state enrichment layer** that augments the RL agent's state with entity-graph features derived from the news corpus.
+
+Built on an **OWL ontology** (`ontology/news_kg.ttl`) with 8 classes and 10 object properties, the module extracts named entities from article titles using spaCy NER, builds a co-occurrence knowledge graph with RDFLib + NetworkX, and computes 3 graph-derived features per candidate article:
+
+| Feature | Description |
+|---------|-------------|
+| `entity_overlap` | Fraction of candidate's entities seen in user's history |
+| `entity_centrality` | Mean PageRank of candidate's entities in the news graph |
+| `entity_novelty` | Unseen entities — complements the ICM exploration reward |
+
+The enriched state grows from 3,840 → **3,843 dims** with a 2-line code change.
+
+See [KG_MODULE.md](KG_MODULE.md) for full architecture, setup, and integration guide.
+
+```
+ontology/news_kg.ttl         OWL ontology (Turtle)
+src/news_kg_builder.py       Build KG from news.tsv
+src/kg_state_encoder.py      KGStateEncoder — drop-in state enrichment
+```
+
 ---
 
 *See also: [ist597-deep-rl-homeworks](https://github.com/yogeshvarreddykallam/ist597-deep-rl-homeworks) for all homework implementations.*
