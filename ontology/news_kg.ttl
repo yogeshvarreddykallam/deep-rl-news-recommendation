@@ -1,0 +1,209 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix nkg:  <http://yogeshvarreddykallam.github.io/news-kg#> .
+
+# ─────────────────────────────────────────────
+#  Ontology declaration
+# ─────────────────────────────────────────────
+
+nkg: a owl:Ontology ;
+    rdfs:label "News Knowledge Graph Ontology" ;
+    rdfs:comment """
+    OWL ontology for the news entity knowledge graph built on MINDsmall.
+    Models news articles, named entities, topics, and their relationships
+    to enrich RL agent state representations in deep news recommendation.
+    """ ;
+    owl:versionInfo "1.0.0" .
+
+# ─────────────────────────────────────────────
+#  Classes
+# ─────────────────────────────────────────────
+
+nkg:Article a owl:Class ;
+    rdfs:label "Article" ;
+    rdfs:comment "A news article identified by its MIND news_id." .
+
+nkg:Entity a owl:Class ;
+    rdfs:label "Entity" ;
+    rdfs:comment "A named entity extracted from article text (parent class)." .
+
+nkg:Person a owl:Class ;
+    rdfs:subClassOf nkg:Entity ;
+    rdfs:label "Person" ;
+    rdfs:comment "A named person mentioned in news articles." .
+
+nkg:Organization a owl:Class ;
+    rdfs:subClassOf nkg:Entity ;
+    rdfs:label "Organization" ;
+    rdfs:comment "A named organization (company, government body, team, etc.)." .
+
+nkg:Location a owl:Class ;
+    rdfs:subClassOf nkg:Entity ;
+    rdfs:label "Location" ;
+    rdfs:comment "A named geographical place or region." .
+
+nkg:Topic a owl:Class ;
+    rdfs:subClassOf nkg:Entity ;
+    rdfs:label "Topic" ;
+    rdfs:comment "A high-level news topic or category (e.g. Politics, Sports, Finance)." .
+
+nkg:Event a owl:Class ;
+    rdfs:subClassOf nkg:Entity ;
+    rdfs:label "Event" ;
+    rdfs:comment "A named event (e.g. elections, championships, natural disasters)." .
+
+nkg:User a owl:Class ;
+    rdfs:label "User" ;
+    rdfs:comment "A reader identified by their MIND user_id." .
+
+nkg:Interaction a owl:Class ;
+    rdfs:label "Interaction" ;
+    rdfs:comment "A click event linking a user to an article at a timestamp." .
+
+# ─────────────────────────────────────────────
+#  Object Properties
+# ─────────────────────────────────────────────
+
+nkg:mentionsEntity a owl:ObjectProperty ;
+    rdfs:domain nkg:Article ;
+    rdfs:range  nkg:Entity ;
+    rdfs:label "mentions entity" ;
+    rdfs:comment "An article contains this named entity in its title or abstract." .
+
+nkg:hasCategory a owl:ObjectProperty ;
+    rdfs:domain nkg:Article ;
+    rdfs:range  nkg:Topic ;
+    rdfs:label "has category" ;
+    rdfs:comment "The MIND category label of this article (e.g. news, sports, finance)." .
+
+nkg:coOccursWith a owl:ObjectProperty , owl:SymmetricProperty ;
+    rdfs:domain nkg:Entity ;
+    rdfs:range  nkg:Entity ;
+    rdfs:label "co-occurs with" ;
+    rdfs:comment "Two entities that appear together in at least one article." .
+
+nkg:relatedTopic a owl:ObjectProperty , owl:SymmetricProperty ;
+    rdfs:domain nkg:Topic ;
+    rdfs:range  nkg:Topic ;
+    rdfs:label "related topic" ;
+    rdfs:comment "Two topics that frequently co-appear in the same articles." .
+
+nkg:clickedBy a owl:ObjectProperty ;
+    rdfs:domain nkg:Article ;
+    rdfs:range  nkg:User ;
+    rdfs:label "clicked by" ;
+    rdfs:comment "A user who clicked this article." .
+
+nkg:hasInteraction a owl:ObjectProperty ;
+    rdfs:domain nkg:User ;
+    rdfs:range  nkg:Interaction ;
+    rdfs:label "has interaction" .
+
+nkg:interactionArticle a owl:ObjectProperty ;
+    rdfs:domain nkg:Interaction ;
+    rdfs:range  nkg:Article ;
+    rdfs:label "interaction article" .
+
+# ─────────────────────────────────────────────
+#  Datatype Properties
+# ─────────────────────────────────────────────
+
+nkg:newsId a owl:DatatypeProperty ;
+    rdfs:domain nkg:Article ;
+    rdfs:range  xsd:string ;
+    rdfs:label "news ID" .
+
+nkg:title a owl:DatatypeProperty ;
+    rdfs:domain nkg:Article ;
+    rdfs:range  xsd:string ;
+    rdfs:label "title" .
+
+nkg:categoryLabel a owl:DatatypeProperty ;
+    rdfs:domain nkg:Article ;
+    rdfs:range  xsd:string ;
+    rdfs:label "category label" .
+
+nkg:entityName a owl:DatatypeProperty ;
+    rdfs:domain nkg:Entity ;
+    rdfs:range  xsd:string ;
+    rdfs:label "entity name" .
+
+nkg:entityType a owl:DatatypeProperty ;
+    rdfs:domain nkg:Entity ;
+    rdfs:range  xsd:string ;
+    rdfs:label "entity type" ;
+    rdfs:comment "spaCy NER label: PERSON, ORG, GPE, EVENT, etc." .
+
+nkg:coOccurrenceCount a owl:DatatypeProperty ;
+    rdfs:domain nkg:Entity ;
+    rdfs:range  xsd:integer ;
+    rdfs:label "co-occurrence count" ;
+    rdfs:comment "Number of articles in which this pair of entities co-occurs." .
+
+nkg:pageRankScore a owl:DatatypeProperty ;
+    rdfs:domain nkg:Entity ;
+    rdfs:range  xsd:float ;
+    rdfs:label "PageRank score" ;
+    rdfs:comment "PageRank centrality of this entity in the co-occurrence graph." .
+
+nkg:userId a owl:DatatypeProperty ;
+    rdfs:domain nkg:User ;
+    rdfs:range  xsd:string ;
+    rdfs:label "user ID" .
+
+nkg:timestamp a owl:DatatypeProperty ;
+    rdfs:domain nkg:Interaction ;
+    rdfs:range  xsd:string ;
+    rdfs:label "timestamp" .
+
+# ─────────────────────────────────────────────
+#  Seed Topic Individuals (MIND categories)
+# ─────────────────────────────────────────────
+
+nkg:TopicNews a nkg:Topic ;
+    rdfs:label "News" ;
+    nkg:entityName "news" .
+
+nkg:TopicSports a nkg:Topic ;
+    rdfs:label "Sports" ;
+    nkg:entityName "sports" ;
+    nkg:relatedTopic nkg:TopicNews .
+
+nkg:TopicFinance a nkg:Topic ;
+    rdfs:label "Finance" ;
+    nkg:entityName "finance" ;
+    nkg:relatedTopic nkg:TopicNews .
+
+nkg:TopicEntertainment a nkg:Topic ;
+    rdfs:label "Entertainment" ;
+    nkg:entityName "entertainment" .
+
+nkg:TopicHealth a nkg:Topic ;
+    rdfs:label "Health" ;
+    nkg:entityName "health" ;
+    nkg:relatedTopic nkg:TopicNews .
+
+nkg:TopicTechnology a nkg:Topic ;
+    rdfs:label "Technology" ;
+    nkg:entityName "technology" ;
+    nkg:relatedTopic nkg:TopicFinance .
+
+nkg:TopicTravel a nkg:Topic ;
+    rdfs:label "Travel" ;
+    nkg:entityName "travel" .
+
+nkg:TopicLifestyle a nkg:Topic ;
+    rdfs:label "Lifestyle" ;
+    nkg:entityName "lifestyle" ;
+    nkg:relatedTopic nkg:TopicHealth .
+
+nkg:TopicPolitics a nkg:Topic ;
+    rdfs:label "Politics" ;
+    nkg:entityName "politics" ;
+    nkg:relatedTopic nkg:TopicNews .
+
+nkg:TopicWeather a nkg:Topic ;
+    rdfs:label "Weather" ;
+    nkg:entityName "weather" .
